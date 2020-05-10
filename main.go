@@ -10,8 +10,14 @@ import (
 
 type Person struct {
 	gorm.Model
-	Name string
-	Age  uint
+	Name   string
+	Age    uint
+	Phones []Phone `gorm:"forgin_key:PersonID"`
+}
+type Phone struct {
+	gorm.Model
+	PhoneNumber string
+	PersonID    uint
 }
 
 func main() {
@@ -24,20 +30,23 @@ func main() {
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Person{})
+	db.AutoMigrate(&Person{}, &Phone{})
 	var row Person
 	//db.Create(&Person{Age: 51, Name: "Gabriel"})
 	//db.Create(&Person{Age: 34, Name: "Reza"})
+	//db.Create(&Phone{PersonID: 1, PhoneNumber: "09215620525"})
+
+	x := db.Model(&Person{}).Find(&row, "id = 1").Related(&row.Phones)
 
 	// x := db.Model(&Person{}).Where(&Person{Name: "Ali"})
-	// rows, _ := x.Rows()
-	// //fmt.Println(err2)
-	//
-	// for rows.Next() {
-	// 	db.ScanRows(rows, &row)
-	// 	//rows.Scan(%row)
-	// 	//fmt.Println(row)
-	// }
+	rows, _ := x.Rows()
+	//fmt.Println(err2)
+
+	for rows.Next() {
+		db.ScanRows(rows, &row)
+		//rows.Scan(%row)
+		fmt.Println(row)
+	}
 	fmt.Println("1----------")
 	// y := db.Model(&Person{}).Where("age > 50")
 	// //x.First(&row, "Age > 50")
